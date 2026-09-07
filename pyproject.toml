@@ -1,0 +1,44 @@
+[project]
+name = "evidencedesk"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [{ name = "Santhosh Kumar", email = "santhosh90612@gmail.com" }]
+maintainers = [{ name = "Santhosh Kumar", email = "santhosh90612@gmail.com" }]
+requires-python = ">=3.13"
+license = "MIT"
+dependencies = [
+    "click>=8.5.0",
+    "langchain-ollama>=1.1.0",
+    "langgraph>=1.2.11",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    "rich>=15.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.6",
+]
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+addopts = ["-ra", "-q", "--maxfail=2", "-rf"]
+testpaths = ["tests**"]
+markers = [
+    "unit: fast tests that do not use external services or a real database",
+    "integration: tests that use PostgreSQL or multiple application components",
+]
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/evidencedesk"]
+
+
