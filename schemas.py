@@ -30,6 +30,12 @@ class FetchStatus(StrEnum):
     failed = "failed"
 
 
+class Confidence(StrEnum):
+    low = "low"
+    moderate = "moderate"
+    high = "high"
+
+
 class Sources(BaseModel):
     id: int
     original_url: AnyHttpUrl
@@ -41,12 +47,6 @@ class Sources(BaseModel):
     title: str | None = None
     published_at: datetime | None = None
     attempted_at: datetime
-
-
-class Confidence(StrEnum):
-    low = "low"
-    moderate = "moderate"
-    high = "high"
 
 
 class Findings(BaseModel):

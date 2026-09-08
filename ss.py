@@ -1,8 +1,15 @@
+import time
 from datetime import date
 
 from langchain_ollama import ChatOllama
 
+from evidencedesk.exceptions import SchemaValidationError
+from evidencedesk.logger import AppLogger
+from evidencedesk.prompts import QUERY_EXPANSION_SYSTEM_PROMPT
 from evidencedesk.schemas import QueryExpansion, ResearchRequest
+from evidencedesk.settings.log_settings import LogSettings
+
+_logger = AppLogger(LogSettings()).getlogger(__name__)
 
 
 class Research:
@@ -10,26 +17,47 @@ class Research:
         self.llm = ChatOllama(
             model=model,
             temperature=0,
+            reasoning=False,
         )
         self.structured_llm = self.llm.with_structured_output(
             QueryExpansion,
             method="json_schema",
         )
-        self.system_prompt = """
-You generate web-search queries for a research workflow.
-Read the research questions and scope from the human message.
-Generate exactly two distinct search phrases per question.
-Preserve the supplied countries, backgrounds, roles, and date scope.
-Use each original question's zero-based position as question_index.
-Do not search the web or answer the questions.
-"""
+        self.system_prompt = QUERY_EXPANSION_SYSTEM_PROMPT
 
     def create_query_expansion(self, request: ResearchRequest) -> QueryExpansion:
         messages = [
             ("system", self.system_prompt),
             ("human", request.model_dump_json()),
         ]
-        return self.structured_llm.invoke(messages)
+        start = time.perf_counter()
+        results = self.structured_llm.invoke(messages)
+        if not isinstance(results, QueryExpansion):
+            raise SchemaValidationError("Expected a QueryExpansion response")
+        print(f"Expansion took {time.perf_counter() - start:.1f}s")
+
+        expected_indices = list(range(len(request.research_question)))
+        results_indices = sorted([q.question_index for q in results.questions])
+
+        if results_indices != expected_indices:
+            _logger.error("Incorrect schema in Query Expansion")
+            raise SchemaValidationError(
+                f"Expected question indices {expected_indices}, "
+                f"but got {results_indices}"
+            )
+        for questions in results.questions:
+            unique_phrases = {
+                " ".join(phrase.split()).casefold()
+                for phrase in questions.search_queries
+            }
+            if len(unique_phrases) != int(2):
+                _logger.error(
+                    f"expected 2 expanded quesries butr got {len(set(unique_phrases))}, Index is {questions.question_index}"
+                )
+                raise SchemaValidationError(
+                    f"expected 2 expanded quesries butr got {len(set(unique_phrases))}, Index is {questions.question_index}"
+                )
+        return results
 
 
 if __name__ == "__main__":
@@ -47,7 +75,7 @@ if __name__ == "__main__":
             "Applied NLP Engineer",
             "Machine Learning Engineer",
         ],
-        as_of_date=date(2026, 1, 1),
+        as_of_date=date.today(),
         market_lookback_months=6,
     )
     result = research.create_query_expansion(request)

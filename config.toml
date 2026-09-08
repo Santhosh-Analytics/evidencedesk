@@ -11,3 +11,12 @@ rich_tracebacks = false
 [exceptions]
 default_error_message = "An unexpected error occured."
 
+[model]
+query_expansion_model = "qwen3:4b"
+research_model = "qwen3:8b"
+web_search_model= "qwen3:8b"
+research_model_reasoning = true
+query_expansion_reasoning = false
+web_search_model_reasoning = true
+
+
