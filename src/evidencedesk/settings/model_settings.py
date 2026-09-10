@@ -12,6 +12,9 @@ class ModelSettings(BaseSettings):
     query_expansion_reasoning: bool = Field(default=False)
     web_search_model_reasoning: bool = Field(default=False)
     research_model_reasoning: bool = Field(default=False)
+    query_expansion_model_termparature: int = Field(default_factory=lambda: 0)
+    web_search_model_temparature: int = Field(default_factory=lambda: 0)
+    research_model_temparature: int = Field(default_factory=lambda: 0)
 
     model_config = SettingsConfigDict(extra="ignore", env_prefix="ev_")
 

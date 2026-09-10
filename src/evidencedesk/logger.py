@@ -39,22 +39,35 @@ class AppLogger:
         )
         return _handlers
 
-    def getlogger(self, name: str | None = None) -> logging.Logger:
-        logger = logging.getLogger(name)
-        if logger.handlers:
-            return logger
-        logger.setLevel(self.settings.log_level.value.upper())
-        logger.propagate = False
-        if self.settings.log_to_console:
-            logger.addHandler(self.make_console_handler())
-        if self.settings.log_to_file:
-            logger.addHandler(self.make_file_handler())
+    # def getlogger(self, name: str | None = None) -> logging.Logger:
+    #     logger = logging.getLogger(name)
+    #     if logger.handlers:
+    #         return logger
+    #     logger.setLevel(self.settings.log_level.value.upper())
+    #     logger.propagate = True
+    #     if self.settings.log_to_console:
+    #         logger.addHandler(self.make_console_handler())
+    #     if self.settings.log_to_file:
+    #         logger.addHandler(self.make_file_handler())
+    #
+    #     return logger
 
+    def configure_root(self, name: str = "evidencedesk") -> logging.Logger:
+        logger = logging.getLogger(name)  # get/create the "evidencedesk" logger
+        if logger.handlers:  # already configured? don't redo it
+            return logger
+        logger.setLevel(
+            self.settings.log_level.value.upper()
+        )  # how verbose YOUR code is
+        if self.settings.log_to_console:
+            logger.addHandler(
+                self.make_console_handler()
+            )  # where messages go: terminal
+        if self.settings.log_to_file:
+            logger.addHandler(self.make_file_handler())  # where messages go: file
         return logger
 
 
 if __name__ == "__main__":
     ss = AppLogger(LogSettings()).getlogger("test")
     dd = AppLogger(LogSettings()).getlogger("test")
-    ss.info("Test")
-    dd.info("test")

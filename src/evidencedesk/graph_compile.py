@@ -2,9 +2,14 @@ from datetime import date
 
 from langgraph.graph import END, START, StateGraph
 
-from evidencedesk.nodes import query_expansion
+from evidencedesk.model_manager import ModelManager
+from evidencedesk.nodes import make_query_expansion_node
 from evidencedesk.schemas.research import ResearchRequest, ResearchState
+from evidencedesk.settings.main import get_settings
 
+_settings = get_settings()
+
+manager = ModelManager(settings=_settings)
 request = ResearchRequest(
     research_question=[
         "BPO to AI transistions in 2026",
@@ -25,7 +30,7 @@ request = ResearchRequest(
 
 builder = StateGraph(ResearchState)
 
-builder.add_node("expand_queries", query_expansion)
+builder.add_node("expand_queries", make_query_expansion_node(manager))
 
 builder.add_edge(START, "expand_queries")
 builder.add_edge("expand_queries", END)

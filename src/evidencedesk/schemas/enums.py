@@ -24,3 +24,15 @@ class Confidence(StrEnum):
     low = "low"
     moderate = "moderate"
     high = "high"
+
+
+class ResearchStateStatus(StrEnum):
+    run = "running"
+    part = "Partial"
+    fail = "Failed"
+    done = "Completed"
+
+
+class ModelTag(StrEnum):
+    query_expansion = "query_expansion"
+    research = "research"

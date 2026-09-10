@@ -41,9 +41,13 @@ class LogSettings(BaseSettings):
         )
     )
 
-    log_file_fmt: str = Field(default="%(asctime)s | %(levelname)-8s | %(message)s")
+    log_file_fmt: str = Field(
+        default="%(asctime)s | %(levelname)-8s | %(message)s | %(name)s"
+    )
     log_encoding: str = Field(default="UTF-8")
-    log_console_fmt: str = Field(default="%(asctime)s | %(levelname)-8s | %(message)s")
+    log_console_fmt: str = Field(
+        default="%(asctime)s | %(levelname)-8s | %(message)s | %(name)s"
+    )
     log_date_fmt: str = "%Y-%m-%d %H:%M:%S"
 
     model_config = SettingsConfigDict(extra="ignore", env_prefix="ev_")

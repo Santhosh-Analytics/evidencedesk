@@ -2,6 +2,7 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from evidencedesk.schemas.enums import ResearchStateStatus
 from evidencedesk.schemas.findings import Finding
 from evidencedesk.schemas.query_expansion import QueryExpansion
 from evidencedesk.schemas.sources import Sources
@@ -32,3 +33,5 @@ class ResearchState(BaseModel):
     market_summary: str | None = None
     transition_summary: str | None = None
     caveats: list[str] = Field(default_factory=list)
+    status: ResearchStateStatus = Field(default_factory=lambda: ResearchStateStatus.run)
+    errors: list[str] = Field(default_factory=list)

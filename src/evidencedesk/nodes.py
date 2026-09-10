@@ -1,21 +1,29 @@
-from evidencedesk.exceptions import BudgetExceededError
-from evidencedesk.logger import AppLogger
-from evidencedesk.query_expander import Research
+import logging
+from typing import Any
+
+from evidencedesk.model_manager import ModelManager
+from evidencedesk.schemas.enums import ModelTag, ResearchStateStatus
 from evidencedesk.schemas.query_expansion import QueryExpansion
 from evidencedesk.schemas.research import ResearchState
-from evidencedesk.settings.log_settings import LogSettings
-from evidencedesk.settings.model_settings import ModelSettings
+from evidencedesk.tools.query_expander import QueryExpander
 
-_logger = AppLogger(LogSettings()).getlogger(__name__)
-
-research: Research = Research(model=ModelSettings().query_expansion_model)
+_logger = logging.getLogger(__name__)
 
 
-def query_expansion(state: ResearchState) -> dict:
-    if state.max_calls <= state.calls_used:
-        _logger.error(f"Max LLM call raached - {state.calls_used}")
-        raise BudgetExceededError(f"Max LLM call raached - {state.calls_used}")
+def make_query_expansion_node(manager: ModelManager):
+    def query_expansion(state: ResearchState) -> dict[str, Any]:
+        if state.max_calls <= state.calls_used:
+            _logger.error(f"Max LLM call raached - {state.calls_used}")
+            return {
+                "status": ResearchStateStatus.fail,
+                "errors": ["Max LLM call raached"],
+            }
 
-    expansion_result: QueryExpansion = research.create_query_expansion(state.request)
+        client = manager.get_role(ModelTag.query_expansion)
+        expander = QueryExpander(client)
 
-    return {"query_expansion": expansion_result, "calls_used": state.calls_used + 1}
+        expansion_result: QueryExpansion = expander.expand(state.request)
+
+        return {"query_expansion": expansion_result, "calls_used": state.calls_used + 1}
+
+    return query_expansion
